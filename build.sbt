@@ -2,7 +2,7 @@ name := """sijali"""
 
 version := "1.0.0"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.2"
 
 resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
