@@ -15,7 +15,7 @@ object Poll extends Command {
   val description = "Post a poll on a slack channel, we can vote with all emojis"
 
   /** The synopsis of the command */
-  val synopsis = s"${SlackBot.botName} poll <channel/group> \"<question>\" :<firstEmoji>: \"<firstAnswer>\" [ :<secondEmoji>: \"<secondAnswer>\" ] ..."
+  val synopsis = s""""${SlackBot.botName} poll <channel/group> "<question>" :<firstEmoji>: "<firstAnswer>" [ :<secondEmoji>: "<secondAnswer>" ] ..."""
 
   /** No short name */
   val short = None
