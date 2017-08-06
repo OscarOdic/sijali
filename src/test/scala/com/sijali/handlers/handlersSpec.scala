@@ -83,7 +83,7 @@ class handlersSpec extends AsyncFlatSpec with Matchers {
       channelId = message.channel,
       message = "response custom test",
       username = Some("testBot"),
-      iconEmoji = Some(":thinking_face:")
+      iconEmoji = Some(":smile:")
     )
 
     handlerMessage(message).head.map(exec =>
