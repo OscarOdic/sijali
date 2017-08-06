@@ -2,7 +2,8 @@ package com.sijali.commands
 
 import com.sijali.SlackBot
 import com.sijali.commands.models.Command
-import com.sijali.util._
+import com.sijali.util.BotMessage
+import com.sijali.util.Slack._
 
 import scala.concurrent.Future
 
@@ -25,7 +26,7 @@ object Help extends Command {
     *
     * @return The list to display on slack
     */
-  def commandsName: String =
+  private def commandsName: String =
     commands.map(c => s"*${c.name}* - _${c.description}_\n").mkString("\n")
 
   /** Get The help for a specific command
@@ -33,7 +34,7 @@ object Help extends Command {
     * @param command The command to get help
     * @return The help to display
     */
-  def commandInfo(command: Command): String =
+  private def commandInfo(command: Command): String =
     s"""*NAME*
        |
        |  *${command.name}* - ${command.description}

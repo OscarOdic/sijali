@@ -10,7 +10,7 @@ libraryDependencies ++= Seq(
   jdbc,
   cache,
   ws,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "com.github.gilbertw1" %% "slack-scala-client" % "0.2.1",
   "com.typesafe.akka" %% "akka-actor" % "2.4.14",
   "com.github.melrief" %% "pureconfig" % "0.3.3",

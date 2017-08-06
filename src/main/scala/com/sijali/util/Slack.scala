@@ -1,11 +1,10 @@
-package com.sijali
+package com.sijali.util
 
-import SlackBot._
-
+import com.sijali.SlackBot._
 import scala.concurrent.{ExecutionContext, Future}
 import slack.models.{Channel, Group, User}
 
-package object util {
+object Slack {
   implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global.prepare()
 
   /** Try the option function, if it is none, try to do the future function, and return a function from
@@ -16,7 +15,7 @@ package object util {
     * @tparam A The type of the returned future
     * @return The function from string to A future
     */
-  def getAById[A](opt: String => Option[A], fut: String => Future[A])(id: String): Future[A] =
+  private def getAById[A](opt: String => Option[A], fut: String => Future[A])(id: String): Future[A] =
     opt(id) match {
       case None => fut(id)
       case Some(c) => Future(c)

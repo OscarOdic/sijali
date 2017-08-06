@@ -2,6 +2,7 @@ package com.sijali
 
 import akka.actor.{ActorRef, ActorSystem}
 import com.sijali.util.BotMessage
+import com.sijali.util.Slack._
 import com.typesafe.config.ConfigFactory
 import handlers.handlerMessage
 import java.util.NoSuchElementException
@@ -30,13 +31,13 @@ object SlackBot {
     *
     * @param err The error
     */
-  def sendErrorMessage(err: Throwable): Unit = {
+  private def sendErrorMessage(err: Throwable): Unit = {
     val error = "[" + Console.RED + "error" + Console.RESET + "] "
     Console.err.println(error + err.getMessage) // scalastyle:ignore
     err.getStackTrace.foreach (s =>
       Console.err.println(error + "at " +  s.toString) // scalastyle:ignore
     )
-    util.getImIdByUserId(ConfigFactory.load.getString("admin.id")) onSuccess {
+    getImIdByUserId(ConfigFactory.load.getString("admin.id")) onSuccess {
       case channel => BotMessage(channel, "*[error]* _" + err.getMessage + "_").send
     }
   }
@@ -45,7 +46,7 @@ object SlackBot {
     *
     * @param m The message
     */
-  def printInfoMessage(m: Message): Unit = {
+  private def printInfoMessage(m: Message): Unit = {
     val info = "[" + Console.BLUE + "info" + Console.RESET + "] "
     println(info + "Received new message") // scalastyle:ignore
     println(info + m.toString) // scalastyle:ignore
@@ -55,7 +56,7 @@ object SlackBot {
     *
     * @return The ActorRef of the bot
     */
-  def listenEvent(): Try[ActorRef] = Try {
+  private def listenEvent(): Try[ActorRef] = Try {
     rtmClient.onMessage { m =>
       printInfoMessage(m)
       Future.sequence(handlerMessage(m)) onComplete {

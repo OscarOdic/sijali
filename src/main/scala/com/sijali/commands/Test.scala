@@ -2,7 +2,8 @@ package com.sijali.commands
 
 import com.sijali.SlackBot
 import com.sijali.commands.models.Command
-import com.sijali.util._
+import com.sijali.util.BotMessage
+import com.sijali.util.Slack._
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 

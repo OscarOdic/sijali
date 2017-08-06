@@ -2,7 +2,8 @@ package com.sijali
 
 import com.sijali.commands.Execution
 import com.sijali.handlers.models.{Config, Reaction}
-import com.sijali.util._
+import com.sijali.util.BotMessage
+import com.sijali.util.Slack._
 import com.typesafe.config.ConfigFactory
 import pureconfig._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,7 +21,7 @@ package object handlers {
     *
     * @return a message to send by the bot
     */
-  def genReactionMessage(message: Message, reaction: Reaction): BotMessage = {
+  private def genReactionMessage(message: Message, reaction: Reaction): BotMessage = {
     val response = if (reaction.response.length == 1)
       reaction.response.head
     else
@@ -50,7 +51,7 @@ package object handlers {
     *
     * @return A possibly future message to admin user
     */
-  def genPrivatesMessagesToAdmin(message: Message): Option[Future[BotMessage]] = {
+  private def genPrivatesMessagesToAdmin(message: Message): Option[Future[BotMessage]] = {
     val adminId = ConfigFactory.load().getString("admin.id")
 
     if (message.user != adminId) {
@@ -74,7 +75,7 @@ package object handlers {
     *
     * @return a probably future message
     */
-  def checkPrivatesMessagesToAdmin(message: Message): Option[Future[Execution]] = {
+  private def checkPrivatesMessagesToAdmin(message: Message): Option[Future[Execution]] = {
     if (message.channel.startsWith("D")) {
       genPrivatesMessagesToAdmin(message) match {
         case None => None
@@ -88,7 +89,7 @@ package object handlers {
     * @param message The message received by the bot
     * @param reaction The reaction of the bot for this message
     */
-  def genReaction(message: Message, reaction: Reaction): Future[Option[BotMessage]] = {
+  private def genReaction(message: Message, reaction: Reaction): Future[Option[BotMessage]] = {
     val chanName = if (reaction.condition.channel == "") Left(true)
     else if (message.channel.head == 'C')
       Right(getChannelById(message.channel).map(_.name))
@@ -115,7 +116,7 @@ package object handlers {
     *
     * @return a list of future message or future error
     */
-  def receivedMessageReaction(message: Message, reactions: List[Reaction]): List[Future[Option[BotMessage]]] = {
+  private def receivedMessageReaction(message: Message, reactions: List[Reaction]): List[Future[Option[BotMessage]]] = {
     reactions.filter(reaction => {
       val condition = reaction.condition
 
@@ -148,7 +149,7 @@ package object handlers {
     *
     * @return a probably future message
     */
-  def executeCommand(
+  private def executeCommand(
                       message: Message,
                       bannedUsers: Array[AnyRef]
                     ): Option[Future[Execution]] =
@@ -168,7 +169,7 @@ package object handlers {
     *
     * @return The list of futures messages
     */
-  def executeReactions(message: Message): List[Future[Execution]] =
+  private def executeReactions(message: Message): List[Future[Execution]] =
     receivedMessageReaction(message, loadConfig[Config].get.reactions).map(_ map {
       case Some(m) => Right(m)
       case None => Left(None)
@@ -180,7 +181,7 @@ package object handlers {
     *
     * @return The list of futures messages
     */
-  def messageExecution(message: Message, bannedUsers: Array[AnyRef]): List[Future[Execution]] =
+  private def messageExecution(message: Message, bannedUsers: Array[AnyRef]): List[Future[Execution]] =
     if (message.text.startsWith(s"${SlackBot.botName} ")) List(executeCommand(message, bannedUsers)).flatten
     else executeReactions(message)
 
