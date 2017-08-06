@@ -16,7 +16,7 @@ object Private extends Command{
   val description = "Post on a slack private conversation with the bot"
 
   /** The synopsis of the command */
-  val synopsis = s"${SlackBot.botName} private <username> <channel>"
+  val synopsis = s"${SlackBot.botName} private <username> <message>"
 
   /** -p */
   val short = Some("-p")

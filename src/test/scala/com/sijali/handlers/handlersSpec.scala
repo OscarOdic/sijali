@@ -1,11 +1,8 @@
 package com.sijali.handlers
 
-import com.sijali.handlers.models.Config
 import com.sijali.util.BotMessage
-import com.sijali.util.Slack._
 import org.scalatest._
 import com.sijali.util.TestMessage.getChannelMessage
-import pureconfig.loadConfig
 
 class handlersSpec extends AsyncFlatSpec with Matchers {
 
