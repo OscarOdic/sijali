@@ -68,6 +68,21 @@ package object handlers {
     else None
   }
 
+  /** Send a private message to the admin slack user if the user send a message to the bot
+    *
+    * @param message The message received by the bot
+    *
+    * @return a probably future message
+    */
+  def checkPrivatesMessagesToAdmin(message: Message): Option[Future[Execution]] = {
+    if (message.channel.startsWith("D")) {
+      genPrivatesMessagesToAdmin(message) match {
+        case None => None
+        case Some(m) => Some(m.map(Right(_)))
+      }
+    } else None
+  }
+
   /** Generate a reaction
     *
     * @param message The message received by the bot
@@ -126,6 +141,49 @@ package object handlers {
     }).map(genReaction(message, _))
   }
 
+  /** Execute a command
+    *
+    * @param message The message received by the bot
+    * @param bannedUsers The banned user to use bot commands
+    *
+    * @return a probably future message
+    */
+  def executeCommand(
+                      message: Message,
+                      bannedUsers: Array[AnyRef]
+                    ): Option[Future[Execution]] =
+    if (bannedUsers.contains(message.user))
+      Some(getImIdByUserId(message.user) map (im =>
+        Right(BotMessage(
+          channelId = im,
+          message = ConfigFactory.load().getString("ban.message")
+        ))
+      ))
+    else
+      commands.execute(message.text.split(" ")(1), message.text.split(" ").drop(2), message.channel)
+
+  /** Execute the reactions motor
+    *
+    * @param message The message received by the bot
+    *
+    * @return The list of futures messages
+    */
+  def executeReactions(message: Message): List[Future[Execution]] =
+    receivedMessageReaction(message, loadConfig[Config].get.reactions).map(_ map {
+      case Some(m) => Right(m)
+      case None => Left(None)
+    })
+
+  /** Execute a command or a bot reaction
+    *
+    * @param message The message received by the bot
+    *
+    * @return The list of futures messages
+    */
+  def messageExecution(message: Message, bannedUsers: Array[AnyRef]): List[Future[Execution]] =
+    if (message.text.startsWith(s"${SlackBot.botName} ")) List(executeCommand(message, bannedUsers)).flatten
+    else executeReactions(message)
+
   /** Handler for a message
     *
     * @example send private bot messages to admin
@@ -141,37 +199,8 @@ package object handlers {
                       message: Message,
                       bannedUsers: Array[AnyRef] = ConfigFactory.load()
                         .getStringList("ban.users").toArray
-                    ): List[Future[Execution]] = {
-    if (SlackBot.botId != message.user) {
-      (if (message.channel.startsWith("D")) {
-        genPrivatesMessagesToAdmin(message) match {
-          case None => List[Future[Execution]]()
-          case Some(m) => List[Future[Execution]](m.map(Right(_)))
-        }
-      } else List[Future[Execution]]()) ++
-        (if (message.text.startsWith(s"${SlackBot.botName} ")) {
-        if (bannedUsers.contains(message.user)) {
-          List[Future[Execution]](getImIdByUserId(message.user) map (im => {
-            Right(BotMessage(
-              channelId = im,
-              message = ConfigFactory.load().getString("ban.message")
-            ))
-          }))
-        }
-        else {
-          commands.execute(message.text.split(" ")(1), message.text.split(" ").drop(2), message.channel) match {
-            case None => List[Future[Execution]]()
-            case Some(m) => List[Future[Execution]](m)
-          }
-        }
-      }
-      else {
-        receivedMessageReaction(message, loadConfig[Config].get.reactions).map(_.map{
-          case Some(m) => Right(m)
-          case None => Left(None)
-        })
-      })
-    }
-    else List()
-  }
+                    ): List[Future[Execution]] =
+    if (SlackBot.botId != message.user)
+      List(checkPrivatesMessagesToAdmin(message)).flatten ++ messageExecution(message, bannedUsers)
+    else List.empty
 }

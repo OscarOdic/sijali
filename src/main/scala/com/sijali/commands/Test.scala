@@ -31,10 +31,10 @@ object Test extends Command {
     * @return The future of a bot message, or an error
     */
   def execute(params: Array[String], channel: String): Future[Execution] =
-    getImIdByUserId(ConfigFactory.load().getString("admin.id")) map ( c => {
+    getImIdByUserId(ConfigFactory.load().getString("admin.id")).map(c =>
       Right(BotMessage(
         channelId = c,
         message = "success"
       ))
-    })
+    )
 }

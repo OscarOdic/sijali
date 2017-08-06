@@ -29,9 +29,9 @@ object As extends Command {
     * @return The future of a bot message, or an error
     */
   def execute(params: Array[String], channel: String): Future[Execution] =
-    getUserByName(params.head).flatMap{
+    getUserByName(params.head) flatMap {
       case Left(e) => Future(Left(Some(e)))
-      case Right(u) => getChanIdByName(params(1)).map {
+      case Right(u) => getChanIdByName(params(1)) map {
         case Left(e) => Left(Some(e))
         case Right(channelId) => Right(BotMessage(
           channelId = channelId,

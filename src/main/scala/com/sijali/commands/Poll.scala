@@ -31,9 +31,9 @@ object Poll extends Command {
     val regex = """("[^"]+")\s+(:.+$)""".r
     val regex(sentence, choiceString) = params.tail.mkString(" ")
 
-    val choices = """:[^:]+:\s+"[^"]+"""".r.findAllIn(choiceString).toList .map { c =>
+    val choices = """:[^:]+:\s+"[^"]+"""".r.findAllIn(choiceString).toList.map(c =>
       (""":.+:""".r.findFirstIn(c).get, """".+"""".r.findFirstIn(c).get.replace("\"", ""))
-    }
+    )
 
     val message = sentence.replace("\"", "*") + "\n" + choices.map(choice => choice._1 + " " + choice._2).mkString("\n")
 

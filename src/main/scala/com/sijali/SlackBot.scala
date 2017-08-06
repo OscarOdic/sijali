@@ -32,19 +32,23 @@ object SlackBot {
     */
   def sendErrorMessage(err: Throwable): Unit = {
     val error = "[" + Console.RED + "error" + Console.RESET + "] "
-    Console.err.println(error + err.getMessage)
-    err.getStackTrace.foreach {s =>
-      Console.err.println(error + "at " +  s.toString)
-    }
+    Console.err.println(error + err.getMessage) // scalastyle:ignore
+    err.getStackTrace.foreach (s =>
+      Console.err.println(error + "at " +  s.toString) // scalastyle:ignore
+    )
     util.getImIdByUserId(ConfigFactory.load.getString("admin.id")) onSuccess {
       case channel => BotMessage(channel, "*[error]* _" + err.getMessage + "_").send
     }
   }
 
+  /** Print a info message
+    *
+    * @param m The message
+    */
   def printInfoMessage(m: Message): Unit = {
     val info = "[" + Console.BLUE + "info" + Console.RESET + "] "
-    println(info + "Received new message")
-    println(info + m.toString)
+    println(info + "Received new message") // scalastyle:ignore
+    println(info + m.toString) // scalastyle:ignore
   }
 
   /** Listen all slack event received by bot and execute handlers
@@ -55,7 +59,7 @@ object SlackBot {
     rtmClient.onMessage { m =>
       printInfoMessage(m)
       Future.sequence(handlerMessage(m)) onComplete {
-        case Success(l) => l.foreach {
+        case Success(l) => l foreach {
           case Left(Some(e)) => sendErrorMessage(new Error(e))
           case Left(None) => sendErrorMessage(new Error("Unknown error"))
           case Right(message) => message.send

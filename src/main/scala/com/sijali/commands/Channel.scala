@@ -29,7 +29,7 @@ object Channel extends Command{
     * @return The future of a bot message, or an error
     */
   def execute(params: Array[String], channel: String): Future[Execution] =
-    getChannelIdByName(params.head).map {
+    getChannelIdByName(params.head) map {
       case Left(e) => Left(Some(e))
       case Right(channelId) => Right(BotMessage(
         channelId = channelId,

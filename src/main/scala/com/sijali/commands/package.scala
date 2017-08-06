@@ -25,9 +25,8 @@ package object commands {
     * @param commandName The name (or short name) of the command to execute
     * @param params The parameters of the command, split words by spaces after the command name
     */
-  def execute(commandName: String, params: Array[String], channel: String): Option[Future[Execution]] = {
+  def execute(commandName: String, params: Array[String], channel: String): Option[Future[Execution]] =
     commands
       .find(c => c.name == commandName || c.short.getOrElse(false) == commandName)
       .map(_.execute(params, channel))
-  }
 }

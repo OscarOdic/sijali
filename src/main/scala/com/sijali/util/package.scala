@@ -160,8 +160,8 @@ package object util {
       name => rtmClient.getState.getChannelIdForName(name).map(Right(_)).orElse(
         rtmClient.getState.ims.find(_.user == rtmClient.getState.getUserIdForName(name)).map(u => Right(u.id)).orElse(
           rtmClient.getState.groups.find(_.name == name).map(g => Right(g.id)))),
-      name => apiClient.listChannels().map(_.find(_.name == name).map(_.id)).flatMap {
-        case None => apiClient.listUsers().map(_.find(_.name == name).map(_.id)).flatMap{
+      name => apiClient.listChannels().map(_.find(_.name == name).map(_.id)) flatMap {
+        case None => apiClient.listUsers().map(_.find(_.name == name).map(_.id)) flatMap {
           case None => apiClient.listGroups().map(_.find(_.name == name).map(_.id))
           case Some(u) => apiClient.openIm(u).map(Some(_))
         }
