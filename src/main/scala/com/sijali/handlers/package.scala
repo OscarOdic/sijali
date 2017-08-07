@@ -21,28 +21,27 @@ package object handlers {
     *
     * @return a message to send by the bot
     */
-  private def genReactionMessage(message: Message, reaction: Reaction): BotMessage = {
-    val response = if (reaction.response.length == 1)
-      reaction.response.head
+  private def genReactionMessage(message: Message, reaction: Reaction): Option[BotMessage] = {
+    val responseOpt = if (reaction.response.length == 1)
+      reaction.response.headOption
     else
-      Random.shuffle(reaction.response).head
-    if (response.params.isDefined) {
-      val params = response.params.get
-      BotMessage(
-        channelId = message.channel,
-        message = response.message.replaceAll("\\$<user>", "<@" + message.user + ">"),
-        asUser = params.asUser,
-        username = params.username,
-        iconUrl = params.iconUrl,
-        iconEmoji = params.iconEmoji
-      )
-    }
-    else {
-      BotMessage(
-        channelId = message.channel,
-        message = response.message.replaceAll("\\$<user>", "<@" + message.user + ">")
-      )
-    }
+      Random.shuffle(reaction.response).headOption
+    responseOpt.map(response =>
+      response.params match {
+        case Some(params) => BotMessage(
+          channelId = message.channel,
+          message = response.message.replaceAll("\\$<user>", "<@" + message.user + ">"),
+          asUser = params.asUser,
+          username = params.username,
+          iconUrl = params.iconUrl,
+          iconEmoji = params.iconEmoji
+        )
+        case None => BotMessage(
+          channelId = message.channel,
+          message = response.message.replaceAll("\\$<user>", "<@" + message.user + ">")
+        )
+      }
+    )
   }
 
   /** Send a private message to the admin slack user
@@ -54,18 +53,15 @@ package object handlers {
   private def genPrivatesMessagesToAdmin(message: Message): Option[Future[BotMessage]] = {
     val adminId = ConfigFactory.load().getString("admin.id")
 
-    if (message.user != adminId) {
-      Some(getUserById(message.user) flatMap (user => {
-        getImIdByUserId(adminId) map (im => {
-          BotMessage(
-            channelId = im,
-            message = message.text,
-            username = Some(user.name),
-            iconUrl = user.profile.map(_.image_72)
-          )
-        })
-      }))
-    }
+    if (message.user != adminId) Some(for {
+      user <- getUserById(message.user)
+      im <- getImIdByUserId(adminId)
+    } yield BotMessage(
+      channelId = im,
+      message = message.text,
+      username = Some(user.name),
+      iconUrl = user.profile.map(_.image_72)
+    ))
     else None
   }
 
@@ -90,22 +86,21 @@ package object handlers {
     * @param reaction The reaction of the bot for this message
     */
   private def genReaction(message: Message, reaction: Reaction): Future[Option[BotMessage]] = {
-    val chanName = if (reaction.condition.channel == "") Left(true)
-    else if (message.channel.head == 'C')
-      Right(getChannelById(message.channel).map(_.name))
-    else if (message.channel.head == 'G')
-      Right(getGroupById(message.channel).map(_.name))
-    else Left(false)
-
-    chanName match {
-      case Left(b) if b =>
-          Future(Some(genReactionMessage(message, reaction)))
-      case Right(c) =>
-        c.map(n => {
-          if (n == reaction.condition.channel) Some(genReactionMessage(message, reaction))
-          else None
-        })
-      case _ => Future(None)
+    reaction.condition.channel match {
+      case "" => Future(genReactionMessage(message, reaction))
+      case channelCondition =>
+        val channelOpt = message.channel.headOption match {
+          case Some('C') => Some(getChannelById(message.channel).map(_.name))
+          case Some('G') => Some(getGroupById(message.channel).map(_.name))
+          case _ => None
+        }
+        channelOpt match {
+          case Some(channel) => channel.map(c =>
+            if (c == channelCondition) genReactionMessage(message, reaction)
+            else None
+          )
+          case _ => Future(None)
+        }
     }
   }
 
@@ -120,9 +115,8 @@ package object handlers {
     reactions.filter(reaction => {
       val condition = reaction.condition
 
-      val user = SlackBot.rtmClient.state
+      val userOpt = SlackBot.rtmClient.state
         .getUserById(message.user)
-        .get
 
       val messageCondition = if (condition.not) {
         condition.message.r.findFirstIn(message.text.toLowerCase).isEmpty
@@ -131,12 +125,14 @@ package object handlers {
         condition.message.r.findFirstIn(message.text.toLowerCase).isDefined
       }
 
-      val userCondition = if (condition.notUser) {
-        condition.user.r.findFirstIn(user.name.toLowerCase).isEmpty
-      }
-      else {
-        condition.user.r.findFirstIn(user.name.toLowerCase).isDefined
-      }
+      val userCondition = userOpt.exists(user =>
+        if (condition.notUser) {
+          condition.user.r.findFirstIn(user.name.toLowerCase).isEmpty
+        }
+        else {
+          condition.user.r.findFirstIn(user.name.toLowerCase).isDefined
+        }
+      )
 
       messageCondition && userCondition
     }).map(genReaction(message, _))
@@ -169,11 +165,13 @@ package object handlers {
     *
     * @return The list of futures messages
     */
-  private def executeReactions(message: Message): List[Future[Execution]] =
-    receivedMessageReaction(message, loadConfig[Config].get.reactions).map(_ map {
+  private def executeReactions(message: Message): List[Future[Execution]] = {
+    val reactions = loadConfig[Config].map(_.reactions).getOrElse(List.empty)
+    receivedMessageReaction(message, reactions).map(_ map {
       case Some(m) => Right(m)
       case None => Left(None)
     })
+  }
 
   /** Execute a command or a bot reaction
     *

@@ -5,6 +5,9 @@ import com.sijali.commands.models.Command
 import com.sijali.util.BotMessage
 import com.sijali.util.Slack._
 import scala.concurrent.Future
+import scalaz.syntax.traverse._
+import scalaz.std.list._
+import scalaz.std.option._
 
 /** Poll command : Post a poll on a slack channel, we can vote with all emojis */
 object Poll extends Command {
@@ -32,19 +35,24 @@ object Poll extends Command {
     val regex = """("[^"]+")\s+(:.+$)""".r
     val regex(sentence, choiceString) = params.tail.mkString(" ")
 
-    val choices = """:[^:]+:\s+"[^"]+"""".r.findAllIn(choiceString).toList.map(c =>
-      (""":.+:""".r.findFirstIn(c).get, """".+"""".r.findFirstIn(c).get.replace("\"", ""))
-    )
+    val choicesOpt = """:[^:]+:\s+"[^"]+"""".r.findAllIn(choiceString).toList.map(c => for {
+      emoji <- """:.+:""".r.findFirstIn(c)
+      vote <- """".+"""".r.findFirstIn(c).map(_.replace("\"", ""))
+    } yield (emoji, vote)).sequence
 
-    val message = sentence.replace("\"", "*") + "\n" + choices.map(choice => choice._1 + " " + choice._2).mkString("\n")
-
-    getChanIdByName(params.head) map {
-      case Left(e) => Left(Some(e))
-      case Right(c) => Right(BotMessage(
-        channelId = c,
-        message = message,
-        reactions = choices.map(_._1.replace(":",""))
-      ))
+    choicesOpt match {
+      case None => Future(Left(Some("Unable to read choices")))
+      case Some(choices) =>
+        val message = sentence.replace("\"", "*") + "\n" +
+          choices.map(choice => choice._1 + " " + choice._2).mkString("\n")
+        getChanIdByName(params.head) map {
+          case Left(e) => Left(Some(e))
+          case Right(c) => Right(BotMessage(
+            channelId = c,
+            message = message,
+            reactions = choices.map(_._1.replace(":",""))
+          ))
+        }
     }
   }
 }

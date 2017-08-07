@@ -1,7 +1,6 @@
 package com.sijali.util
 
-import com.sijali.SlackBot.apiClient
-import com.sijali.SlackBot.system
+import com.sijali.SlackBot.{apiClient, system}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 

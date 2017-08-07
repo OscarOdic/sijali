@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   "com.github.gilbertw1" %% "slack-scala-client" % "0.2.1",
   "com.typesafe.akka" %% "akka-actor" % "2.4.14",
   "com.github.melrief" %% "pureconfig" % "0.3.3",
-  "org.ow2.chameleon.urlshortener" % "url-shortener-tinyurl" % "0.2.0"
+  "org.ow2.chameleon.urlshortener" % "url-shortener-tinyurl" % "0.2.0",
+  "org.scalaz" %% "scalaz-core" % "7.2.14"
 )
 
 enablePlugins(JavaAppPackaging)

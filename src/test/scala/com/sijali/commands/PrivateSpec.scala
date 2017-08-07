@@ -2,19 +2,20 @@ package com.sijali.commands
 
 import com.sijali.util.BotMessage
 import org.scalatest.{AsyncFlatSpec, Matchers}
+import com.sijali.util.TestMessage
 import com.sijali.util.TestMessage._
 
-class PrivateSpec extends AsyncFlatSpec with Matchers {
+class PrivateSpec extends AsyncFlatSpec with Matchers with TestMessage {
   "Private command" should "generate a private message" in {
-    val command = s"$userName example message".split(" ")
+    val command = s"sijali private $userName example message"
 
-    val botMessage = BotMessage(
+    val botMessageOpt = for {
+      imId <- imIdOpt
+    } yield BotMessage(
       channelId = imId,
       message = "example message"
     )
 
-    Private.execute(command, channelName).map(exec =>
-      exec should be(Right(botMessage))
-    )
+    assertFirstExecution(getChannelMessage(command, imIdOpt), botMessageOpt)
   }
 }

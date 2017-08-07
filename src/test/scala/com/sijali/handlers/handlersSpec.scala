@@ -2,89 +2,95 @@ package com.sijali.handlers
 
 import com.sijali.util.BotMessage
 import org.scalatest._
-import com.sijali.util.TestMessage.getChannelMessage
+import com.sijali.util.TestMessage
 
-class handlersSpec extends AsyncFlatSpec with Matchers {
+class handlersSpec extends AsyncFlatSpec with Matchers with TestMessage {
 
   "A simple reaction" should "generate a simple response" in {
-    val message = getChannelMessage("simple test message")
-    val botMessage = BotMessage(
+    val messageOpt = getChannelMessage("simple test message")
+    val botMessageOpt = messageOpt.map(message => BotMessage(
       channelId = message.channel,
       message = "response simple test"
-    )
+    ))
 
-    handlerMessage(message).head.map(exec =>
-      exec should be(Right(botMessage))
-    )
+    assertFirstExecution(messageOpt, botMessageOpt)
   }
 
   "A reaction with user" should "generate a response for this user" in {
-    val message = getChannelMessage("user test message")
-    val botMessage = BotMessage(
+    val messageOpt = getChannelMessage("user test message")
+    val botMessageOpt = messageOpt.map(message => BotMessage(
       channelId = message.channel,
       message = "response user test"
-    )
+    ))
 
-    handlerMessage(message).head.map(exec =>
-      exec should be(Right(botMessage))
-    )
+    assertFirstExecution(messageOpt, botMessageOpt)
   }
 
   it should "doesn't generate a response for another user" in {
-    val message = getChannelMessage("user failed test message")
+    val messageOpt = getChannelMessage("user failed test message")
 
-    handlerMessage(message) should be(empty)
+    messageOpt.map(message =>
+      handlerMessage(message) should be(empty)
+    ).getOrElse(fail)
   }
 
   "A reaction with not user" should "generate a response for another user" in {
-    val message = getChannelMessage("user test 2 message")
-    val botMessage = BotMessage(
+    val messageOpt = getChannelMessage("user test 2 message")
+    val botMessageOpt = messageOpt.map(message => BotMessage(
       channelId = message.channel,
       message = "response user test 2"
-    )
+    ))
 
-    handlerMessage(message).head.map(exec =>
-      exec should be(Right(botMessage))
-    )
+    assertFirstExecution(messageOpt, botMessageOpt)
   }
 
   it should "doesn't generate a response for this user" in {
-    val message = getChannelMessage("user failed test 2 message")
+    val messageOpt = getChannelMessage("user failed test 2 message")
 
-    handlerMessage(message) should be(empty)
+    messageOpt.map(message =>
+      handlerMessage(message) should be(empty)
+    ).getOrElse(fail)
   }
 
   "A reaction with channel" should "generate a response for this channel" in {
-    val message = getChannelMessage("channel test message")
-    val botMessage = BotMessage(
+    val messageOpt = getChannelMessage("channel test message")
+    val botMessageOpt = messageOpt.map(message => BotMessage(
       channelId = message.channel,
       message = "response channel test"
-    )
+    ))
 
-    handlerMessage(message).head.map(exec =>
-      exec should be(Right(botMessage))
-    )
+    assertFirstExecution(messageOpt, botMessageOpt)
   }
 
   it should "doesn't generate a response for another channel" in {
-    val message = getChannelMessage("channel failed test message")
+    val messageOpt = getChannelMessage("channel failed test message")
 
-    handlerMessage(message).head.map(exec =>
+    val response = messageOpt.flatMap(message =>
+      handlerMessage(message).headOption
+    ).getOrElse(fail)
+
+    response.map(exec =>
       exec should be(Left(None))
     )
   }
 
   "A custom reaction" should "generate a custom response" in {
-    val message = getChannelMessage("custom test message")
-    val botMessage = BotMessage(
+    val messageOpt = getChannelMessage("custom test message")
+    val botMessageOpt = messageOpt.map(message => BotMessage(
       channelId = message.channel,
       message = "response custom test",
       username = Some("testBot"),
       iconEmoji = Some(":smile:")
-    )
+    ))
 
-    handlerMessage(message).head.map(exec =>
-      exec should be(Right(botMessage))
-    )
+    assertFirstExecution(messageOpt, botMessageOpt)
+  }
+
+  "No reaction" should "generate no response" in {
+    val messageOpt = getChannelMessage("nothing")
+
+    messageOpt.map(message =>
+      handlerMessage(message) should be(empty)
+    ).getOrElse(fail)
   }
 }

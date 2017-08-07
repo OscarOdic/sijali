@@ -2,19 +2,20 @@ package com.sijali.commands
 
 import com.sijali.util.BotMessage
 import org.scalatest.{AsyncFlatSpec, Matchers}
+import com.sijali.util.TestMessage
 import com.sijali.util.TestMessage._
 
-class ChannelSpec extends AsyncFlatSpec with Matchers {
+class ChannelSpec extends AsyncFlatSpec with Matchers with TestMessage {
   "Channel command" should "generate a message for a channel slack" in {
-    val command = s"$channelName example message".split(" ")
+    val command = s"sijali channel $channelName example message"
 
-    val botMessage = BotMessage(
+    val botMessageOpt = for {
+      channelId <- channelIdOpt
+    } yield BotMessage(
       channelId = channelId,
       message = "example message"
     )
 
-    Channel.execute(command, channelName).map(exec =>
-      exec should be(Right(botMessage))
-    )
+    assertFirstExecution(getChannelMessage(command), botMessageOpt)
   }
 }
