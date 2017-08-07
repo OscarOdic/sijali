@@ -1,8 +1,7 @@
 package com.sijali.handlers
 
-import com.sijali.util.BotMessage
+import com.sijali.util.{BotMessage, TestMessage}
 import org.scalatest._
-import com.sijali.util.TestMessage
 
 class handlersSpec extends AsyncFlatSpec with Matchers with TestMessage {
 

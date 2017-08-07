@@ -35,7 +35,7 @@ object Poll extends Command {
     val regex = """("[^"]+")\s+(:.+$)""".r
     val regex(sentence, choiceString) = params.tail.mkString(" ")
 
-    val choicesOpt = """:[^:]+:\s+"[^"]+"""".r.findAllIn(choiceString).toList.map(c => for {
+    val choicesOpt = """:\w+:\s+"\w+"""".r.findAllIn(choiceString).toList.map(c => for {
       emoji <- """:.+:""".r.findFirstIn(c)
       vote <- """".+"""".r.findFirstIn(c).map(_.replace("\"", ""))
     } yield (emoji, vote)).sequence
