@@ -6,6 +6,8 @@ scalaVersion := "2.11.8"
 
 resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
+coverageEnabled := true
+
 libraryDependencies ++= Seq(
   jdbc,
   cache,
