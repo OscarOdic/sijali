@@ -16,6 +16,12 @@ class PollSpec extends AsyncFlatSpec with Matchers with TestMessage {
       reactions = List("one", "two", "three")
     )
 
-    assertFirstExecution(getChannelMessage(command), botMessageOpt)
+    assertMessage(getChannelMessage(command), botMessageOpt)
+  }
+
+  it should "generate an error if the channel, user or group is not found" in {
+    val command = """sijali poll nothing "example message" :one: "one" :two: "two" :three: "three""""
+
+    assertError(getChannelMessage(command), Some("Channel, User or Group nothing not found"))
   }
 }

@@ -17,6 +17,12 @@ class EmojiSpec extends AsyncFlatSpec with Matchers with TestMessage {
       iconEmoji = Some(":smile:")
     )
 
-    assertFirstExecution(getChannelMessage(command), botMessageOpt)
+    assertMessage(getChannelMessage(command), botMessageOpt)
+  }
+
+  it should "generate an error if the channel, user or group is not found" in {
+    val command = "sijali emoji testbot :smile: nothing example message"
+
+    assertError(getChannelMessage(command), Some("Channel, User or Group nothing not found"))
   }
 }

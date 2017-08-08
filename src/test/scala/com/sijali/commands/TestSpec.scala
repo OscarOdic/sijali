@@ -6,15 +6,13 @@ import com.sijali.util.TestMessage._
 
 class TestSpec extends AsyncFlatSpec with Matchers with TestMessage {
   "Test command" should "generate a test message" in {
-    val command = s"sijali test"
+    val command = "sijali test"
 
-    val botMessageOpt = for {
-      imId <- imIdOpt
-    } yield BotMessage(
-      channelId = imId,
+    val botMessage = BotMessage(
+      channelId = imIdAdmin,
       message = "success"
     )
 
-    assertFirstExecution(getChannelMessage(command, imIdOpt), botMessageOpt)
+    assertMessage(getChannelMessage(command), Some(botMessage))
   }
 }

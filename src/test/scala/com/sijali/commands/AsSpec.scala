@@ -18,6 +18,18 @@ class AsSpec extends AsyncFlatSpec with Matchers with TestMessage {
       iconUrl = user.profile.map(_.image_72)
     )
 
-    assertFirstExecution(getChannelMessage(command), botMessageOpt)
+    assertMessage(getChannelMessage(command), botMessageOpt)
+  }
+
+  it should "generate an error if the user is not found" in {
+    val command = s"sijali as nothing $channelName example message"
+
+    assertError(getChannelMessage(command), Some("User nothing not found"))
+  }
+
+  it should "generate an error if the channel, user or group is not found" in {
+    val command = s"sijali as $userName nothing example message"
+
+    assertError(getChannelMessage(command), Some("Channel, User or Group nothing not found"))
   }
 }

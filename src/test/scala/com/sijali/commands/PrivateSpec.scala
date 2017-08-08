@@ -15,6 +15,12 @@ class PrivateSpec extends AsyncFlatSpec with Matchers with TestMessage {
       message = "example message"
     )
 
-    assertFirstExecution(getChannelMessage(command, imIdOpt), botMessageOpt)
+    assertMessage(getChannelMessage(command), botMessageOpt)
+  }
+
+  it should "generate an error if the user is not found" in {
+    val command = "sijali private nothing example message"
+
+    assertError(getChannelMessage(command), Some("User nothing not found"))
   }
 }

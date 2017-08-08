@@ -15,6 +15,12 @@ class LmgtfySpec extends AsyncFlatSpec with Matchers with TestMessage {
       message = "http://letmegooglethatforyou.com/?q=example+message"
     )
 
-    assertFirstExecution(getChannelMessage(command), botMessageOpt)
+    assertMessage(getChannelMessage(command), botMessageOpt)
+  }
+
+  it should "generate an error if the channel, user or group is not found" in {
+    val command = "sijali lmgtfy nothing example message"
+
+    assertError(getChannelMessage(command), Some("Channel, User or Group nothing not found"))
   }
 }

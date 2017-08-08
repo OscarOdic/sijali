@@ -15,6 +15,12 @@ class ChannelSpec extends AsyncFlatSpec with Matchers with TestMessage {
       message = "example message"
     )
 
-    assertFirstExecution(getChannelMessage(command), botMessageOpt)
+    assertMessage(getChannelMessage(command), botMessageOpt)
+  }
+
+  it should "generate an error if the channel is not found" in {
+    val command = "sijali channel nothing example message"
+
+    assertError(getChannelMessage(command), Some("Channel nothing not found"))
   }
 }
