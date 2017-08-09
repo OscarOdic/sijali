@@ -115,26 +115,18 @@ package object handlers extends RegexParsers {
   private def receivedMessageReaction(message: Message, reactions: List[Reaction]): List[Future[Option[BotMessage]]] = {
     reactions.filter(reaction => {
       val condition = reaction.condition
-
       val userOpt = SlackBot.rtmClient.state
         .getUserById(message.user)
-
-      val messageCondition = if (condition.not) {
+      val messageCondition = if (condition.not)
         condition.message.r.findFirstIn(message.text.toLowerCase).isEmpty
-      }
-      else {
+      else
         condition.message.r.findFirstIn(message.text.toLowerCase).isDefined
-      }
-
       val userCondition = userOpt.exists(user =>
-        if (condition.notUser) {
+        if (condition.notUser)
           condition.user.r.findFirstIn(user.name.toLowerCase).isEmpty
-        }
-        else {
+        else
           condition.user.r.findFirstIn(user.name.toLowerCase).isDefined
-        }
       )
-
       messageCondition && userCondition
     }).map(genReaction(message, _))
   }
