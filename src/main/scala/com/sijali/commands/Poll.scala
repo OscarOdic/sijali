@@ -24,35 +24,29 @@ object Poll extends Command {
   /** No short name */
   val short = None
 
-  /** Execute the command with some parameters
+  /** Generate a parser to execute with parameters
     *
-    * @param params channel | "question" | :firstEmoji: | "firstAnswer" | ...
     * @param channel The channel where is executed the command
     *
-    * @return The future of a bot message, or an error
+    * @return The parser
     */
-  def execute(params: Array[String], channel: String): Future[Execution] = {
-    val regex = """("[^"]+")\s+(:.+$)""".r
-    val regex(sentence, choiceString) = params.tail.mkString(" ")
-
-    val choicesOpt = """:\w+:\s+"\w+"""".r.findAllIn(choiceString).toList.map(c => for {
-      emoji <- """:.+:""".r.findFirstIn(c)
-      vote <- """".+"""".r.findFirstIn(c).map(_.replace("\"", ""))
-    } yield (emoji, vote)).sequence
-
-    choicesOpt match {
-      case None => Future(Left(Some("Unable to read choices")))
-      case Some(choices) =>
-        val message = sentence.replace("\"", "*") + "\n" +
-          choices.map(choice => choice._1 + " " + choice._2).mkString("\n")
-        getChanIdByName(params.head) map {
-          case Left(e) => Left(Some(e))
-          case Right(c) => Right(BotMessage(
-            channelId = c,
-            message = message,
-            reactions = choices.map(_._1.replace(":",""))
-          ))
-        }
+  def parser(channel: String): Parser[Future[Execution]] =
+    for {
+      channelName <- """\w+""".r
+      sentence <- "\"" ~> """[^"]+""".r <~ "\""
+      choices <- rep(for {
+        emoji <- ":" ~> """\w+""".r <~ ":"
+        vote <- "\"" ~> """\w+""".r <~ "\""
+      } yield (emoji, vote))
+    } yield {
+      val message = s"*$sentence*\n" + choices.map(choice => s":${choice._1}: ${choice._2}").mkString("\n")
+      getChanIdByName(channelName) map {
+        case Left(e) => Left(Some(e))
+        case Right(c) => Right(BotMessage(
+          channelId = c,
+          message = message,
+          reactions = choices.map(_._1)
+        ))
+      }
     }
-  }
 }

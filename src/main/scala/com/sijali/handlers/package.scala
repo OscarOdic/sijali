@@ -10,9 +10,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
 import slack.models.Message
+import scala.util.parsing.combinator.RegexParsers
 
 /** Handlers of slack events */
-package object handlers {
+package object handlers extends RegexParsers {
 
   /** Send a reaction for a message
     *
@@ -156,9 +157,17 @@ package object handlers {
           message = ConfigFactory.load().getString("ban.message")
         ))
       ))
-    else
-      commands.execute(message.text.split(" ")(1), message.text.split(" ").drop(2), message.channel)
+    else {
+      def commandParser = for {
+        _ <- SlackBot.botName.r
+        commandName <- """\w+""".r
+        params <- """.+$""".r.? ^^ (_.getOrElse(""))
+      } yield (commandName, params)
 
+      parse(commandParser, message.text).map(command =>
+        commands.execute(command._1, command._2, message.channel)
+      ).getOrElse(None)
+    }
   /** Execute the reactions motor
     *
     * @param message The message received by the bot
