@@ -64,7 +64,7 @@ object SlackBot {
           case Left(Some(e)) => sendErrorMessage(new Error(e))
           case Right(message) => message.send
           case Left(None) => ;
-          case _ => endErrorMessage(new Error("Unknown error"))
+          case _ => sendErrorMessage(new Error("Unknown error"))
         }
         case Failure(e) => e match {
           case _: NoSuchElementException => ;
