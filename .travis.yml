@@ -14,4 +14,4 @@ deploy:
   provider: script
   script: scripts/deploy.sh $DEPLOY_HOST $DEPLOY_PASS $DEPLOY_USER $DEPLOY_PATH
   on:
-    branch: feature/production
+    branch: master
