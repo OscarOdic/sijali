@@ -23,19 +23,21 @@ object Lmgtfy extends Command {
   /** No short name */
   val short = None
 
-  /** Execute the command with some parameters
+  /** Generate a parser to execute with parameters
     *
-    * @param params target (channel/user/group) | message
     * @param channel The channel where is executed the command
     *
-    * @return The future of a bot message, or an error
+    * @return The parser
     */
-  def execute(params: Array[String], channel: String): Future[Execution] =
-    getChanIdByName(params.head) map {
+  def parser(channel: String): Parser[Future[Execution]] =
+    for {
+      channelName <- """\w+""".r
+      message <- """.+$""".r.? ^^ (_.getOrElse(""))
+    } yield getChanIdByName(channelName) map {
       case Left(e) => Left(Some(e))
       case Right(c) => Right(BotMessage(
         channelId = c,
-        message = "http://letmegooglethatforyou.com/?q=" + URLEncoder.encode(params.tail.mkString(" "), "UTF-8")
+        message = "http://letmegooglethatforyou.com/?q=" + URLEncoder.encode(message, "UTF-8")
       ))
     }
 }

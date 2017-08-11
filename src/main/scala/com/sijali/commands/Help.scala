@@ -43,19 +43,20 @@ object Help extends Command {
        |
        |  _${command.synopsis}_""".stripMargin
 
-  /** Execute the command with some parameters
+  /** Generate a parser to execute with parameters
     *
-    * @param params empty/command
     * @param channel The channel where is executed the command
     *
-    * @return The future of a bot message, or an error
+    * @return The parser
     */
-  def execute(params: Array[String], channel: String): Future[Execution] =
-    Future(Right(BotMessage(
+  def parser(channel: String): Parser[Future[Execution]] =
+    for {
+      commandOpt <- """\w+""".r.?
+    } yield Future(Right(BotMessage(
       channelId = channel,
-      message = params.toList match {
-        case Nil => commandsName
-        case command::_ => commands.find(_.name == command).map(commandInfo).getOrElse(commandsName)
+      message = commandOpt match {
+        case None => commandsName
+        case Some(command) => commands.find(_.name == command).map(commandInfo).getOrElse(commandsName)
       }
     )))
 }

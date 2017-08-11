@@ -22,19 +22,21 @@ object Channel extends Command{
   /** -c */
   val short = Some("-c")
 
-  /** Execute the command with some parameters
+  /** Generate a parser to execute with parameters
     *
-    * @param params channel/group name | message
     * @param channel The channel where is executed the command
     *
-    * @return The future of a bot message, or an error
+    * @return The parser
     */
-  def execute(params: Array[String], channel: String): Future[Execution] =
-    getChannelIdByName(params.head) map {
+  def parser(channel: String): Parser[Future[Execution]] =
+    for {
+      channelName <- """\w+""".r
+      message <- """.+$""".r.? ^^ (_.getOrElse(""))
+    } yield getChannelIdByName(channelName) map {
       case Left(e) => Left(Some(e))
       case Right(channelId) => Right(BotMessage(
         channelId = channelId,
-        message = params.tail.mkString(" ")
+        message = message
       ))
     }
 }

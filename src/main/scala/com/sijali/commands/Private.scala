@@ -21,19 +21,21 @@ object Private extends Command{
   /** -p */
   val short = Some("-p")
 
-  /** Execute the command with some parameters
+  /** Generate a parser to execute with parameters
     *
-    * @param params user | message
     * @param channel The channel where is executed the command
     *
-    * @return The future of a bot message, or an error
+    * @return The parser
     */
-  def execute(params: Array[String], channel: String): Future[Execution] =
-    getImIdByUserName(params.head) map {
+  def parser(channel: String): Parser[Future[Execution]] =
+    for {
+      username <- """\w+""".r
+      message <- """.+$""".r.? ^^ (_.getOrElse(""))
+    } yield getImIdByUserName(username) map {
       case Left(e) => Left(Some(e))
       case Right(c) => Right(BotMessage(
         channelId = c,
-        message = params.tail.mkString(" ")
+        message = message
       ))
     }
 }

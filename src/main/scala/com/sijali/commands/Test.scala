@@ -24,18 +24,19 @@ object Test extends Command {
   /** -t */
   val short = Some("-t")
 
-  /** Execute the command with some parameters
+  /** Generate a parser to execute with parameters
     *
-    * @param params empty
     * @param channel The channel where is executed the command
     *
-    * @return The future of a bot message, or an error
+    * @return The parser
     */
-  def execute(params: Array[String], channel: String): Future[Execution] =
-    getImIdByUserId(ConfigFactory.load().getString("admin.id")).map(c =>
-      Right(BotMessage(
-        channelId = c,
-        message = "success"
-      ))
-    )
+  def parser(channel: String): Parser[Future[Execution]] =
+    Parser(input => Success(
+      getImIdByUserId(ConfigFactory.load().getString("admin.id")).map(c =>
+        Right(BotMessage(
+          channelId = c,
+          message = "success"
+        ))
+      ), input
+    ))
 }

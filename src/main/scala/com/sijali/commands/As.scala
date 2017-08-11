@@ -23,21 +23,24 @@ object As extends Command {
   /** No short name */
   val short = None
 
-  /** Execute the command with some parameters
+  /** Generate a parser to execute with parameters
     *
-    * @param params userName (declared in application.conf) | target (channel/user/group) | message
     * @param channel The channel where is executed the command
     *
-    * @return The future of a bot message, or an error
+    * @return The parser
     */
-  def execute(params: Array[String], channel: String): Future[Execution] =
-    getUserByName(params.head) flatMap {
+  def parser(channel: String): Parser[Future[Execution]] =
+    for {
+      userName <- """\w+""".r
+      channelName <- """\w+""".r
+      message <- """.+$""".r.? ^^ (_.getOrElse(""))
+    } yield getUserByName(userName) flatMap {
       case Left(e) => Future(Left(Some(e)))
-      case Right(u) => getChanIdByName(params(1)) map {
+      case Right(u) => getChanIdByName(channelName) map {
         case Left(e) => Left(Some(e))
         case Right(channelId) => Right(BotMessage(
           channelId = channelId,
-          message = params.drop(2).mkString(" "),
+          message = message,
           username = Some(u.name),
           iconUrl = u.profile.map(_.image_72)
         ))

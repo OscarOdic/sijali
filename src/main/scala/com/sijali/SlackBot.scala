@@ -62,8 +62,9 @@ object SlackBot {
       Future.sequence(handlerMessage(m)) onComplete {
         case Success(l) => l foreach {
           case Left(Some(e)) => sendErrorMessage(new Error(e))
-          case Left(None) => sendErrorMessage(new Error("Unknown error"))
           case Right(message) => message.send
+          case Left(None) => ;
+          case _ => sendErrorMessage(new Error("Unknown error"))
         }
         case Failure(e) => e match {
           case _: NoSuchElementException => ;

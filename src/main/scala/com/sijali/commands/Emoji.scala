@@ -22,21 +22,25 @@ object Emoji extends Command {
   /** -e */
   val short = Some("-e")
 
-  /** Execute the command with some parameters
+  /** Generate a parser to execute with parameters
     *
-    * @param params userName | :emojiName: (like :joy:) | target (channel/user/group) | message
     * @param channel The channel where is executed the command
     *
-    * @return The future of a bot message, or an error
+    * @return The parser
     */
-  def execute(params: Array[String], channel: String): Future[Execution] =
-    getChanIdByName(params(2)) map {
+  def parser(channel: String): Parser[Future[Execution]] =
+    for {
+      username <- """\w+""".r
+      emoji <- """:\w+:""".r
+      channelName <- """\w+""".r
+      message <- """.+$""".r.? ^^ (_.getOrElse(""))
+    } yield getChanIdByName(channelName) map {
       case Left(e) => Left(Some(e))
       case Right(c) => Right(BotMessage(
         channelId = c,
-        message = params.drop(3).mkString(" "),
-        username = Some(params.head),
-        iconEmoji = Some(params(1))
+        message = message,
+        username = Some(username),
+        iconEmoji = Some(emoji)
       ))
     }
 }
