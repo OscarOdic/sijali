@@ -6,7 +6,13 @@ scalaVersion := "2.11.8"
 
 resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
-coverageEnabled := true
+assemblyMergeStrategy in assembly := {
+  case PathList("reference.conf") => MergeStrategy.concat
+  case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+  case _ => MergeStrategy.first
+}
+
+assemblyJarName in assembly := "sijali.jar"
 
 libraryDependencies ++= Seq(
   jdbc,

@@ -1,8 +1,17 @@
 language: scala
 scala:
    - 2.11.8
+addons:
+    apt:
+        packages:
+            - sshpass
 script:
    - sbt clean coverage test
    - sbt coverageReport
 after_success:
    - sbt codacyCoverage
+deploy:
+  provider: script
+  script: scripts/deploy.sh $DEPLOY_HOST $DEPLOY_PASS $DEPLOY_USER $DEPLOY_PATH
+  on:
+    branch: feature/production
