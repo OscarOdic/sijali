@@ -33,7 +33,7 @@ object As extends Command {
     for {
       userName <- """\w+""".r
       channelName <- """\w+""".r
-      message <- """.+$""".r.? ^^ (_.getOrElse(""))
+      message <- """(?s).+$""".r.? ^^ (_.getOrElse(""))
     } yield getUserByName(userName) flatMap {
       case Left(e) => Future(Left(Some(e)))
       case Right(u) => getChanIdByName(channelName) map {

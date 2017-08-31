@@ -10,7 +10,6 @@ package object commands {
 
   /** Array of commands recognized by the bot */
   val commands: Array[Command] = Array(
-    Test,
     Channel,
     Private,
     As,

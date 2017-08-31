@@ -5,9 +5,6 @@ import com.sijali.commands.models.Command
 import com.sijali.util.BotMessage
 import com.sijali.util.Slack._
 import scala.concurrent.Future
-import scalaz.syntax.traverse._
-import scalaz.std.list._
-import scalaz.std.option._
 
 /** Poll command : Post a poll on a slack channel, we can vote with all emojis */
 object Poll extends Command {

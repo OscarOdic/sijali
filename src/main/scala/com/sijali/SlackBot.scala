@@ -17,7 +17,7 @@ import slack.rtm.SlackRtmClient
 object SlackBot {
   val token: String = ConfigFactory.load().getString("bot.token")
   val botName: String = ConfigFactory.load().getString("bot.name")
-  implicit val system = ActorSystem(botName)
+  implicit val system: ActorSystem = ActorSystem(botName)
   val apiClient = SlackApiClient(token)
   val rtmClient = SlackRtmClient(token)
 
@@ -27,18 +27,28 @@ object SlackBot {
     */
   def botId: String = rtmClient.state.self.id
 
-  /** Print and send to admin slack user a error message
+  /** Print and send to an error message on the channel
+    * and if the command is used in a private message, send also the error to the admin user
     *
     * @param err The error
+    * @param channel The channel to send the error
     */
-  private def sendErrorMessage(err: Throwable): Unit = {
+  private def sendErrorMessage(err: Throwable, channel: Option[String] = None): Unit = {
     val error = "[" + Console.RED + "error" + Console.RESET + "] "
     Console.err.println(error + err.getMessage) // scalastyle:ignore
-    err.getStackTrace.foreach (s =>
-      Console.err.println(error + "at " +  s.toString) // scalastyle:ignore
-    )
-    getImIdByUserId(ConfigFactory.load.getString("admin.id")) onSuccess {
-      case channel => BotMessage(channel, "*[error]* _" + err.getMessage + "_").send
+    val message = "*[error]* _" + err.getMessage + "_"
+
+    def sendToAdmin(channel: Option[String] = None): Unit =
+      getImIdByUserId(ConfigFactory.load.getString("admin.id")) onSuccess {
+        case adminChannel => if (!channel.contains(adminChannel)) BotMessage(adminChannel, message).send
+      }
+
+    channel match {
+      case Some(c) =>
+        if (c.startsWith("D")) sendToAdmin(Some(c))
+        BotMessage(c, message).send
+      case None =>
+        sendToAdmin()
     }
   }
 
@@ -61,19 +71,19 @@ object SlackBot {
       printInfoMessage(m)
       Future.sequence(handlerMessage(m)) onComplete {
         case Success(l) => l foreach {
-          case Left(Some(e)) => sendErrorMessage(new Error(e))
+          case Left(Some(e)) => sendErrorMessage(new Exception(e), Some(m.channel))
           case Right(message) => message.send
           case Left(None) => ;
-          case _ => sendErrorMessage(new Error("Unknown error"))
+          case _ => sendErrorMessage(new Exception("Unknown error"), Some(m.channel))
         }
         case Failure(e) => e match {
           case _: NoSuchElementException => ;
-          case _ => sendErrorMessage(e)
+          case _ => sendErrorMessage(e, Some(m.channel))
         }
       }
     }
   }
 
   def main(args: Array[String]): Unit =
-    listenEvent().failed.map(sendErrorMessage)
+    listenEvent().failed.map(sendErrorMessage(_))
 }

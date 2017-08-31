@@ -33,7 +33,7 @@ object Emoji extends Command {
       username <- """\w+""".r
       emoji <- """:\w+:""".r
       channelName <- """\w+""".r
-      message <- """.+$""".r.? ^^ (_.getOrElse(""))
+      message <- """(?s).+$""".r.? ^^ (_.getOrElse(""))
     } yield getChanIdByName(channelName) map {
       case Left(e) => Left(Some(e))
       case Right(c) => Right(BotMessage(
