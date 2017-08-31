@@ -6,7 +6,7 @@ import com.sijali.util.TestMessage._
 
 class HelpSpec extends AsyncFlatSpec with Matchers with TestMessage {
 
-  val defaultHelp: String = "*test* - _Test if the bot is connected to slack, post a private to the admin user_\n\n" +
+  val defaultHelp: String =
     "*channel* - _Post on a slack channel or group with the bot_\n\n" +
     "*private* - _Post on a slack private conversation with the bot_\n\n" +
     "*as* - _To chat on slack in place of a user_\n\n" +
