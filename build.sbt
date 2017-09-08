@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-  "com.github.gilbertw1" %% "slack-scala-client" % "0.2.1",
+  "com.github.gilbertw1" %% "slack-scala-client" % "0.1.8",
   "com.typesafe.akka" %% "akka-actor" % "2.4.14",
   "com.github.melrief" %% "pureconfig" % "0.3.3",
   "org.ow2.chameleon.urlshortener" % "url-shortener-tinyurl" % "0.2.0",

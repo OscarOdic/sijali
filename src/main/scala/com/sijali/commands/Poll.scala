@@ -32,8 +32,8 @@ object Poll extends Command {
       channelName <- """\w+""".r
       sentence <- "\"" ~> """[^"]+""".r <~ "\""
       choices <- rep(for {
-        emoji <- ":" ~> """\w+""".r <~ ":"
-        vote <- "\"" ~> """\w+""".r <~ "\""
+        emoji <- ":" ~> """[^:]+""".r <~ ":"
+        vote <- "\"" ~> """[^"]+""".r <~ "\""
       } yield (emoji, vote))
     } yield {
       val message = s"*$sentence*\n" + choices.map(choice => s":${choice._1}: ${choice._2}").mkString("\n")
