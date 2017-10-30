@@ -35,6 +35,7 @@ trait TestMessage extends AsyncFlatSpec with Matchers {
       channel = channelId,
       user = userId,
       text = text,
+      None,
       None
     )
   }
