@@ -5,6 +5,7 @@ import com.sijali.commands.models.Command
 import com.sijali.util.BotMessage
 import com.sijali.util.Slack._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /** Channel command : Post on a slack channel or group with the bot */

@@ -31,7 +31,7 @@ object As extends Command {
     */
   def parser(channel: String): Parser[Future[Execution]] =
     for {
-      userName <- """\w+""".r
+      userName <- """\S+""".r
       channelName <- """\w+""".r
       message <- """(?s).+$""".r.? ^^ (_.getOrElse(""))
     } yield getUserByName(userName) flatMap {

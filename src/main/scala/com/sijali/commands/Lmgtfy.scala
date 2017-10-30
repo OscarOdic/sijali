@@ -6,6 +6,7 @@ import com.sijali.util.BotMessage
 import com.sijali.util.Slack._
 import java.net.URLEncoder
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /** Lmgtfy command : Redirect a user to a google page, with lmgtfy website **/

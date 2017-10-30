@@ -1,12 +1,11 @@
 package com.sijali.util
 
 import com.sijali.SlackBot._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import slack.models.{Channel, Group, User}
 
 object Slack {
-  implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global.prepare()
-
   /** Try the option function, if it is none, try to do the future function, and return a function from
     * string to future
     *

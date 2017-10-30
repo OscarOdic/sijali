@@ -5,6 +5,7 @@ import com.sijali.commands.models.Command
 import com.sijali.util.BotMessage
 import com.sijali.util.Slack._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /** Emoji command : Post a slack message with other username and emoji icon */
@@ -30,7 +31,7 @@ object Emoji extends Command {
     */
   def parser(channel: String): Parser[Future[Execution]] =
     for {
-      username <- """\w+""".r
+      username <- """\S+""".r
       emoji <- """:\w+:""".r
       channelName <- """\w+""".r
       message <- """(?s).+$""".r.? ^^ (_.getOrElse(""))

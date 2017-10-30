@@ -39,9 +39,9 @@ object SlackBot {
     val message = "*[error]* _" + err.getMessage + "_"
 
     def sendToAdmin(channel: Option[String] = None): Unit =
-      getImIdByUserId(ConfigFactory.load.getString("admin.id")) onSuccess {
-        case adminChannel => if (!channel.contains(adminChannel)) BotMessage(adminChannel, message).send
-      }
+      getImIdByUserId(ConfigFactory.load.getString("admin.id")) onComplete (_.map(adminChannel =>
+        if (!channel.contains(adminChannel)) BotMessage(adminChannel, message).send
+      ))
 
     channel match {
       case Some(c) =>

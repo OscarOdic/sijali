@@ -1,8 +1,7 @@
 package com.sijali.util
 
-import com.sijali.SlackBot.{apiClient, system}
+import com.sijali.SlackBot.{apiClient, botId, system}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 /** A bot message to send on slack
   *
@@ -24,11 +23,7 @@ case class BotMessage(
                   reactions: List[String] = List()
                   ) {
 
-  /** Send the message on Slack
-    *
-    * @return The Future of the Timestamp
-    */
-  def send: Future[String] = {
+  private def sendToChannel: Unit = {
     val future = username match {
       case None => apiClient.postChatMessage(
         channelId = channelId,
@@ -46,16 +41,29 @@ case class BotMessage(
     }
 
     if (reactions.nonEmpty)
-      future onSuccess {
-        case ts => reactions.foreach(r => {
+      future onComplete (_.map(ts =>
+        reactions.foreach(r => {
           apiClient.addReactionToMessage(
             emojiName = r,
             timestamp = ts,
             channelId = channelId
           )
         })
-      }
+      ))
+  }
 
-    future
+  private def sendAll: Unit = {
+    apiClient.listIms
+      .map(_.filter(_.user != botId))
+      .foreach(_.foreach(im => this.copy(channelId = im.id).sendToChannel))
+  }
+
+  /** Send the message on Slack
+    *
+    * @return The Future of the Timestamp
+    */
+  def send: Unit = {
+    if (channelId == "all") sendAll
+    else sendToChannel
   }
 }

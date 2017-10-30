@@ -181,7 +181,9 @@ package object handlers extends RegexParsers {
     * @return The list of futures messages
     */
   private def messageExecution(message: Message, bannedUsers: Array[AnyRef]): List[Future[Execution]] =
-    if (message.text.startsWith(s"${SlackBot.botName} ")) List(executeCommand(message, bannedUsers)).flatten
+    if (message.text.startsWith(s"${SlackBot.botName} ") &&
+      commands.commands.exists(c => message.text.contains(c.name)))
+      List(executeCommand(message, bannedUsers)).flatten
     else executeReactions(message)
 
   /** Handler for a message

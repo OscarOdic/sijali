@@ -2,7 +2,7 @@ name := """sijali"""
 
 version := "1.0.0"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.2"
 
 resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 
@@ -15,15 +15,10 @@ assemblyMergeStrategy in assembly := {
 assemblyJarName in assembly := "sijali.jar"
 
 libraryDependencies ++= Seq(
-  jdbc,
-  cache,
-  ws,
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-  "com.github.gilbertw1" %% "slack-scala-client" % "0.1.8",
-  "com.typesafe.akka" %% "akka-actor" % "2.4.14",
+  "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+  "com.github.gilbertw1" %% "slack-scala-client" % "0.2.2",
+  "com.typesafe.akka" %% "akka-actor" % "2.5.4",
+  "com.typesafe.akka" %% "akka-stream" % "2.5.4",
   "com.github.melrief" %% "pureconfig" % "0.3.3",
-  "org.ow2.chameleon.urlshortener" % "url-shortener-tinyurl" % "0.2.0",
   "org.scalaz" %% "scalaz-core" % "7.2.14"
 )
-
-enablePlugins(JavaAppPackaging)

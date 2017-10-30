@@ -3,8 +3,8 @@ package com.sijali.commands
 import com.sijali.SlackBot
 import com.sijali.commands.models.Command
 import com.sijali.util.BotMessage
-import com.sijali.util.Slack._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /** Help command : Show available commands and how to use it for the bot */
