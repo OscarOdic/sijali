@@ -30,7 +30,7 @@ object Poll extends Command {
     */
   def parser(channel: String): Parser[Future[Execution]] =
     for {
-      channelName <- """\w+""".r
+      channel <- "\"" ~> ("<@" ~> """\w+""".r <~ ">") | ("<#" ~> """\w+""".r <~ """\|\w+>""".r)
       sentence <- "\"" ~> """[^"]+""".r <~ "\""
       choices <- rep(for {
         emoji <- ":" ~> """[^:]+""".r <~ ":"
@@ -38,13 +38,10 @@ object Poll extends Command {
       } yield (emoji, vote))
     } yield {
       val message = s"*$sentence*\n" + choices.map(choice => s":${choice._1}: ${choice._2}").mkString("\n")
-      getChanIdByName(channelName) map {
-        case Left(e) => Left(Some(e))
-        case Right(c) => Right(BotMessage(
-          channelId = c,
-          message = message,
-          reactions = choices.map(_._1)
-        ))
-      }
+      Future(Right(BotMessage(
+        channelId = channel,
+        message = message,
+        reactions = choices.map(_._1)
+      )))
     }
 }

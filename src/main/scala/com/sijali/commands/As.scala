@@ -31,19 +31,15 @@ object As extends Command {
     */
   def parser(channel: String): Parser[Future[Execution]] =
     for {
-      userName <- """\S+""".r
-      channelName <- """\w+""".r
+      user <- "<@" ~> """\w+""".r <~ ">"
+      channel <- ("<@" ~> """\w+""".r <~ ">") | ("<#" ~> """\w+""".r <~ """\|\w+>""".r)
       message <- """(?s).+$""".r.? ^^ (_.getOrElse(""))
-    } yield getUserByName(userName) flatMap {
-      case Left(e) => Future(Left(Some(e)))
-      case Right(u) => getChanIdByName(channelName) map {
-        case Left(e) => Left(Some(e))
-        case Right(channelId) => Right(BotMessage(
-          channelId = channelId,
-          message = message,
-          username = Some(u.name),
-          iconUrl = u.profile.map(_.image_72)
-        ))
-      }
-    }
+    } yield getUserById(user).map(u =>
+      Right(BotMessage(
+        channelId = channel,
+        message = message,
+        username = u.profile.get.real_name,
+        iconUrl = u.profile.map(_.image_72)
+      ))
+    )
 }

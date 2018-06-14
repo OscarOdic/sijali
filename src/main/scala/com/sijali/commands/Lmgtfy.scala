@@ -32,13 +32,10 @@ object Lmgtfy extends Command {
     */
   def parser(channel: String): Parser[Future[Execution]] =
     for {
-      channelName <- """\w+""".r
+      channel <- ("<@" ~> """\w+""".r <~ ">") | ("<#" ~> """\w+""".r <~ """\|\w+>""".r)
       message <- """(?s).+$""".r.? ^^ (_.getOrElse(""))
-    } yield getChanIdByName(channelName) map {
-      case Left(e) => Left(Some(e))
-      case Right(c) => Right(BotMessage(
-        channelId = c,
-        message = "http://letmegooglethatforyou.com/?q=" + URLEncoder.encode(message, "UTF-8")
-      ))
-    }
+    } yield Future(Right(BotMessage(
+      channelId = channel,
+      message = "http://letmegooglethatforyou.com/?q=" + URLEncoder.encode(message, "UTF-8")
+    )))
 }

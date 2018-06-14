@@ -33,15 +33,12 @@ object Emoji extends Command {
     for {
       username <- """\S+""".r
       emoji <- """:\w+:""".r
-      channelName <- """\w+""".r
+      channel <- ("<@" ~> """\w+""".r <~ ">") | ("<#" ~> """\w+""".r <~ """\|\w+>""".r)
       message <- """(?s).+$""".r.? ^^ (_.getOrElse(""))
-    } yield getChanIdByName(channelName) map {
-      case Left(e) => Left(Some(e))
-      case Right(c) => Right(BotMessage(
-        channelId = c,
-        message = message,
-        username = Some(username),
-        iconEmoji = Some(emoji)
-      ))
-    }
+    } yield Future(Right(BotMessage(
+      channelId = channel,
+      message = message,
+      username = Some(username),
+      iconEmoji = Some(emoji)
+    )))
 }

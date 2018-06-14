@@ -31,13 +31,10 @@ object Channel extends Command{
     */
   def parser(channel: String): Parser[Future[Execution]] =
     for {
-      channelName <- """\w+""".r
+      channel <- "<#" ~> """\w+""".r <~ """\|\w+>""".r
       message <- """(?s).+$""".r.? ^^ (_.getOrElse(""))
-    } yield getChannelIdByName(channelName) map {
-      case Left(e) => Left(Some(e))
-      case Right(channelId) => Right(BotMessage(
-        channelId = channelId,
-        message = message
-      ))
-    }
+    } yield Future(Right(BotMessage(
+      channelId = channel,
+      message = message
+    )))
 }

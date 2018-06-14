@@ -130,4 +130,9 @@ object Slack {
         case Some(chanId) => Right(chanId)
       }
     )(name)
+
+  def getChanIdById(id: String): Future[String] = id.head match {
+    case 'C' | 'G' => Future(id)
+    case 'U' => getImIdByUserId(id)
+  }
 }

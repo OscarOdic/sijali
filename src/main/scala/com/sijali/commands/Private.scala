@@ -30,19 +30,12 @@ object Private extends Command{
     */
   def parser(channel: String): Parser[Future[Execution]] =
     for {
-      user <- """\S+""".r
+      user <- "<@" ~> """\w+""".r <~ ">"
       message <- """(?s).+$""".r.? ^^ (_.getOrElse(""))
-    } yield user match {
-      case "all" => Future(Right(BotMessage(
-        channelId = user,
+    } yield getImIdByUserId(user).map(c =>
+      Right(BotMessage(
+        channelId = c,
         message = message
-      )))
-      case username => getImIdByUserName(username) map {
-        case Left(e) => Left(Some(e))
-        case Right(c) => Right(BotMessage(
-          channelId = c,
-          message = message
-        ))
-      }
-    }
+      ))
+    )
 }
